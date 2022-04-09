@@ -9,15 +9,15 @@ public class НалаштовувачОбєктів {
 
     private final Reflections reflections;
 
-    public НалаштовувачОбєктів(String path) {
-        this.reflections = new Reflections(path);
+    public НалаштовувачОбєктів(Reflections reflections) {
+        this.reflections = reflections;
     }
 
-    public <T> void зробитиВсіНалаштування(T t) {
+    public <T> void зробитиВсіНалаштування(T t, Контекст контекст) {
         reflections.getSubTypesOf(Налаштовувач.class)
                 .forEach(налаштовувач -> {
                     try {
-                        налаштовувач.getDeclaredConstructor().newInstance().налаштувати(t);
+                        налаштовувач.getDeclaredConstructor().newInstance().налаштувати(t, контекст);
                     } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
                         e.printStackTrace();
                     }

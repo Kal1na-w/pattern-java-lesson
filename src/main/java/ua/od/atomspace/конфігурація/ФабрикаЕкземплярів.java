@@ -2,34 +2,32 @@ package ua.od.atomspace.конфігурація;
 
 import lombok.SneakyThrows;
 import org.reflections.Reflections;
+import ua.od.atomspace.сервіс.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ФабрикаЕкземплярів  {
-    private final Reflections reflections;
     private final НалаштовувачОбєктів налаштовувачОбєктів;
+    private final Контекст контекст;
 
-    public ФабрикаЕкземплярів() {
-        this.налаштовувачОбєктів = new НалаштовувачОбєктів("ua.od.atomspace");
-        this.reflections = new Reflections("ua.od.atomspace");
+    public ФабрикаЕкземплярів(Контекст контекст) {
+        this.контекст = контекст;
+        this.налаштовувачОбєктів = new НалаштовувачОбєктів(контекст.getКонфігураціяЗалежностей().getСканер());
     }
     
     @SneakyThrows
-    public <T> T взятиЕкземпляр(Class<T> clazz) {
-        T одинака = взятиОдинака(clazz);
+    public <T> T створитиЕкземпляр(Class<T> імплементація) {
+        T одинака = створитиЕкзкмплярІмплементації(імплементація);
 
-        налаштовувачОбєктів.зробитиВсіНалаштування(одинака);
+        налаштовувачОбєктів.зробитиВсіНалаштування(одинака, контекст);
 
         return одинака;
     }
 
-    private <T> T взятиОдинака(Class<T> clazz) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        Class<?> одинак = Arrays.stream(clazz.getDeclaredClasses())
-                .filter(innerClass -> innerClass.getSimpleName().equals("Одинак"))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Не має під класу одинака"));
-
-        return (T) одинак.getMethod("взятиЕкзкмпляр").invoke(одинак);
+    private <T> T створитиЕкзкмплярІмплементації(Class<? extends T> імплементація) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        return імплементація.getDeclaredConstructor().newInstance();
     }
 }
